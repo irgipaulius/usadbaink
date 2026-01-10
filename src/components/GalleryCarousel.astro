@@ -1,0 +1,98 @@
+---
+const { images = [], title = "", lead = "" } = Astro.props;
+---
+
+<section class="section" id="gallery" data-gallery>
+  <div class="container">
+    <div class="carousel" style="margin-top:16px" data-carousel>
+      <button class="carBtn" type="button" aria-label="Previous" data-prev>‹</button>
+      <div class="carTrack" data-track>
+        {images.map((src, idx) => (
+          <button class="carItem" type="button" data-open={idx} aria-label={`Open image ${idx + 1}`}>
+            <img src={src} alt="" loading="lazy" />
+          </button>
+        ))}
+      </div>
+      <button class="carBtn" type="button" aria-label="Next" data-next>›</button>
+    </div>
+  </div>
+
+  <div class="lightbox" data-lightbox aria-hidden="true">
+    <button class="lbBg" type="button" data-close aria-label="Close"></button>
+    <div class="lbInner" role="dialog" aria-modal="true">
+      <button class="lbBtn" type="button" data-lb-prev aria-label="Previous">‹</button>
+      <img data-lb-img alt="" />
+      <button class="lbBtn" type="button" data-lb-next aria-label="Next">›</button>
+      <button class="lbClose" type="button" data-close aria-label="Close">×</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const root = document.querySelector('[data-gallery]');
+    if (!root) return;
+
+    const track = root.querySelector('[data-track]');
+    const prev = root.querySelector('[data-prev]');
+    const next = root.querySelector('[data-next]');
+
+    const items = Array.from(root.querySelectorAll('[data-open]'));
+    const lightbox = root.querySelector('[data-lightbox]');
+    const lbImg = root.querySelector('[data-lb-img]');
+    const lbPrev = root.querySelector('[data-lb-prev]');
+    const lbNext = root.querySelector('[data-lb-next]');
+    const closes = Array.from(root.querySelectorAll('[data-close]'));
+
+    if (!track || !prev || !next || !lightbox || !lbImg || !lbPrev || !lbNext) return;
+
+    const sources = items.map((b) => {
+      const img = b.querySelector('img');
+      return img ? img.getAttribute('src') : '';
+    }).filter(Boolean);
+
+    function scrollByOne(dir) {
+      const first = track.querySelector('.carItem');
+      const w = first ? first.getBoundingClientRect().width : 320;
+      track.scrollBy({ left: dir * (w + 16), behavior: 'smooth' });
+    }
+
+    prev.addEventListener('click', () => scrollByOne(-1));
+    next.addEventListener('click', () => scrollByOne(1));
+
+    let index = 0;
+
+    function openAt(i) {
+      index = (i + sources.length) % sources.length;
+      lbImg.src = sources[index];
+      lightbox.setAttribute('aria-hidden', 'false');
+      lightbox.classList.add('open');
+      document.documentElement.style.overflow = 'hidden';
+    }
+
+    function close() {
+      lightbox.setAttribute('aria-hidden', 'true');
+      lightbox.classList.remove('open');
+      document.documentElement.style.overflow = '';
+    }
+
+    function step(dir) {
+      openAt(index + dir);
+    }
+
+    items.forEach((btn) => {
+      btn.addEventListener('click', () => openAt(Number(btn.getAttribute('data-open') || '0')));
+    });
+
+    closes.forEach((c) => c.addEventListener('click', close));
+    lbPrev.addEventListener('click', () => step(-1));
+    lbNext.addEventListener('click', () => step(1));
+
+    window.addEventListener('keydown', (e) => {
+      if (!lightbox.classList.contains('open')) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') step(-1);
+      if (e.key === 'ArrowRight') step(1);
+    });
+  })();
+</script>

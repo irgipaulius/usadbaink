@@ -1,0 +1,63 @@
+---
+const { lang } = Astro.props;
+
+const langs = [
+  { code: 'ru', label: 'RU', flag: '/assets/icons-flag-ru.png' },
+  { code: 'en', label: 'EN', flag: '/assets/icons-flag-en.png' },
+  { code: 'lt', label: 'LT', flag: '/assets/icons-flag-lt.png' },
+];
+
+function hrefFor(code) {
+  return `/${code}/`;
+}
+---
+
+<div class="langSwitch" aria-label="Language" data-lang-switch>
+  <div class="langDropdown">
+    <img
+      class="langFlag"
+      src={(langs.find((l) => l.code === lang) || langs[0]).flag}
+      alt={lang}
+      loading="lazy"
+      data-lang-flag
+    />
+    <select class="langSelect" aria-label="Language" data-lang-select>
+      {langs.map((l) => (
+        <option value={l.code} selected={l.code === lang}>{l.label}</option>
+      ))}
+    </select>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const root = document.querySelector('[data-lang-switch]');
+    if (!root) return;
+
+    const select = root.querySelector('[data-lang-select]');
+    const flag = root.querySelector('[data-lang-flag]');
+    if (!select) return;
+
+    const flags = {
+      ru: '/assets/icons-flag-ru.png',
+      en: '/assets/icons-flag-en.png',
+      lt: '/assets/icons-flag-lt.png',
+    };
+
+    function go(code) {
+      const base = `/${code}/`;
+      const hash = window.location.hash || '';
+      window.location.href = base + hash;
+    }
+
+    select.addEventListener('change', () => {
+      const code = String(select.value || '').trim();
+      if (!code) return;
+      if (flag && flags[code]) {
+        flag.setAttribute('src', flags[code]);
+        flag.setAttribute('alt', code);
+      }
+      go(code);
+    });
+  })();
+</script>

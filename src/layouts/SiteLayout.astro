@@ -1,0 +1,154 @@
+---
+import "../styles/global.css";
+import LanguageSwitcher from "../components/LanguageSwitcher.astro";
+
+const {
+  lang,
+  title,
+  nav = [],
+  logo = '/assets/logo_ru.jpg',
+} = Astro.props;
+
+const pageTitle = title ? `${title} | USADBA INK` : "USADBA INK";
+---
+
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <header class="siteHeader">
+      <div class="container navRow">
+        <a class="brand" href={`/${lang}/`}>
+          <img src={logo} alt="USADBA INK" loading="eager" />
+        </a>
+
+        <nav class="navLinks" aria-label="Primary" data-nav>
+          {nav.map((item) => (
+            <a href={item.href} data-active={item.active ? 'true' : 'false'} data-nav-link>{item.label}</a>
+          ))}
+        </nav>
+
+        <div class="headerRight">
+          <a class="btn" href="https://www.facebook.com/Usadba.MestoSily/" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M13.5 22v-8h2.7l.4-3h-3.1V9.1c0-.9.3-1.5 1.6-1.5h1.7V5a23 23 0 0 0-2.5-.1c-2.5 0-4.2 1.5-4.2 4.3V11H7.5v3h2.6v8h3.4Z" fill="currentColor"/>
+            </svg>
+            <span class="small">Facebook</span>
+          </a>
+          <LanguageSwitcher lang={lang} />
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="siteFooter">
+      <div class="container">
+        <div class="small">© {new Date().getFullYear()} USADBA INK</div>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function setActiveHash(hash) {
+          const nav = document.querySelector('[data-nav]');
+          if (!nav) return;
+          const links = Array.from(nav.querySelectorAll('[data-nav-link]'));
+          links.forEach((a) => a.setAttribute('data-active', 'false'));
+          if (!hash) return;
+          const active = links.find((a) => (a.getAttribute('href') || '') === hash);
+          if (active) active.setAttribute('data-active', 'true');
+        }
+
+        function scrollToHash(hash, behavior) {
+          if (!hash || hash === '#') return;
+          const id = hash.slice(1);
+          const el = document.getElementById(id);
+          if (!el) return;
+          const r = el.getBoundingClientRect();
+          const y = window.scrollY + r.top - (window.innerHeight / 2 - r.height / 2);
+          window.scrollTo({ top: Math.max(0, y), behavior: prefersReduced ? 'auto' : behavior });
+        }
+
+        document.addEventListener('click', (e) => {
+          const a = e.target && e.target.closest ? e.target.closest('a[href^="#"]') : null;
+          if (!a) return;
+          const href = a.getAttribute('href') || '';
+          if (!href.startsWith('#')) return;
+          const hash = href;
+          if (!document.getElementById(hash.slice(1))) return;
+          e.preventDefault();
+          history.pushState(null, '', hash);
+          setActiveHash(hash);
+          scrollToHash(hash, 'smooth');
+        });
+
+        window.addEventListener('hashchange', () => {
+          setActiveHash(window.location.hash);
+          scrollToHash(window.location.hash, 'smooth');
+        });
+
+        // Scrollspy: highlight nav item for section currently in view.
+        (function setupScrollSpy() {
+          const nav = document.querySelector('[data-nav]');
+          if (!nav) return;
+          const links = Array.from(nav.querySelectorAll('[data-nav-link]'));
+          const ids = links
+            .map((a) => (a.getAttribute('href') || '').trim())
+            .filter((h) => h.startsWith('#') && h.length > 1)
+            .map((h) => h.slice(1));
+
+          const targets = ids
+            .map((id) => document.getElementById(id))
+            .filter(Boolean);
+
+          if (!targets.length || !('IntersectionObserver' in window)) {
+            setActiveHash(window.location.hash || '#about');
+            return;
+          }
+
+          let last = window.location.hash;
+          const io = new IntersectionObserver(
+            (entries) => {
+              const visible = entries
+                .filter((e) => e.isIntersecting)
+                .sort((a, b) => (b.intersectionRatio || 0) - (a.intersectionRatio || 0));
+              if (!visible.length) return;
+              const id = visible[0].target && visible[0].target.id;
+              if (!id) return;
+              const hash = `#${id}`;
+              if (hash === last) return;
+              last = hash;
+              setActiveHash(hash);
+            },
+            {
+              root: null,
+              threshold: [0.25, 0.5, 0.75],
+              rootMargin: '-35% 0px -45% 0px',
+            }
+          );
+
+          targets.forEach((t) => io.observe(t));
+          setActiveHash(window.location.hash || '#about');
+        })();
+
+        if (window.location.hash) {
+          window.requestAnimationFrame(() => {
+            setTimeout(() => scrollToHash(window.location.hash, 'smooth'), 60);
+          });
+        } else {
+          setActiveHash('#about');
+        }
+      })();
+    </script>
+  </body>
+</html>

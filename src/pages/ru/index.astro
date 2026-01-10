@@ -1,0 +1,21 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import OnePage from "../../components/OnePage.astro";
+import { getContent } from "../../lib/i18n.js";
+
+const lang = "ru";
+const logo = "/assets/logo_ru.jpg";
+
+const c = getContent(lang);
+
+const nav = [
+  { href: "#about", label: c.nav.about, active: false },
+  { href: "#what", label: c.nav.what, active: false },
+  { href: "#gallery", label: c.nav.gallery, active: false },
+  { href: "#contact", label: c.nav.contact, active: false },
+];
+---
+
+<SiteLayout lang={lang} title={c.brand.title} nav={nav} logo={logo}>
+  <OnePage lang={lang} />
+</SiteLayout>

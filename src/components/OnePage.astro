@@ -1,0 +1,136 @@
+---
+import { getContent } from "../lib/i18n.js";
+import { getGalleryImages } from "../lib/gallery.js";
+import GalleryCarousel from "./GalleryCarousel.astro";
+
+const { lang = "ru" } = Astro.props;
+const c = getContent(lang);
+
+const phoneDisplay = "+370 611 844 27";
+const phoneHref = "tel:+37061184427";
+const mapHref = "https://maps.app.goo.gl/nqWTfoWYnQ2MjVN17";
+const mailHref = "mailto:irgitomas@yahoo.com";
+const mailDisplay = "irgitomas@yahoo.com";
+const mapEmbedSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4526.168868810194!2d25.768099599197917!3d55.443759677452306!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46dd5105f2b1adcd%3A0x6dcf1f127d14a368!2sSodyba%20%22J%C4%97gos%20Vieta%22%20%2F%20&#39;Place%20of%20Power&#39;!5e0!3m2!1sen!2str!4v1768033308481!5m2!1sen!2str";
+
+const images = getGalleryImages();
+---
+
+<section class="hero" id="top">
+  <div class="container heroCover heroCoverSolo">
+    <div class="heroPedestal" aria-label="Hero image" data-hero>
+      <div class="heroGlow" aria-hidden="true" data-hero-glow></div>
+      <div class="heroFrame">
+        <img src="/assets/hero.avif" alt={c.hero.title} loading="eager" data-hero-img />
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const root = document.querySelector('[data-hero]');
+    if (!root) return;
+    const img = root.querySelector('[data-hero-img]');
+    const glow = root.querySelector('[data-hero-glow]');
+    if (!img || !glow) return;
+
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
+    let raf = 0;
+    let tx = 0;
+    let ty = 0;
+
+    function apply() {
+      raf = 0;
+      img.style.transform = `scale(1.04) translate(${tx}px, ${ty}px)`;
+      glow.style.transform = `translate(${tx * 2}px, ${ty * 2}px)`;
+    }
+
+    root.addEventListener('pointermove', (e) => {
+      const r = root.getBoundingClientRect();
+      const nx = (e.clientX - r.left) / r.width - 0.5;
+      const ny = (e.clientY - r.top) / r.height - 0.5;
+      tx = Math.max(-10, Math.min(10, nx * 14));
+      ty = Math.max(-10, Math.min(10, ny * 14));
+      if (!raf) raf = requestAnimationFrame(apply);
+    });
+
+    root.addEventListener('pointerleave', () => {
+      tx = 0;
+      ty = 0;
+      if (!raf) raf = requestAnimationFrame(apply);
+    });
+  })();
+</script>
+
+<section class="section" id="about">
+    <div class="container glass" style="padding:18px">
+      <div class="kicker">{c.sections.about.kicker}</div>
+      <div class="lead" style="max-width: 90ch">
+        {c.sections.about.paragraphs.map((p) => <p set:html={p} />)}
+      </div>
+    </div>
+  </section>
+
+<section class="section" id="what">
+    <div class="container glass" style="padding:18px">
+      <div class="kicker">{c.sections.what.kicker}</div>
+      <div class="lead" style="max-width: 90ch">
+        {c.sections.what.paragraphs.map((p) => <p>{p}</p>)}
+      </div>
+    </div>
+  </section>
+
+<GalleryCarousel images={images} title={c.sections.gallery.title} lead={c.sections.gallery.lead} />
+
+<section class="section" id="contact">
+    <div class="container heroGrid">
+      <div class="glass" style="padding:18px">
+        <div class="kicker">{c.sections.contact.kicker}</div>
+        <p class="lead">{c.sections.contact.lead}</p>
+
+        <div class="card" style="margin-top:14px">
+          <div class="small">Tomas: <a href={phoneHref}><strong>{phoneDisplay}</strong></a></div>
+          <div class="small" style="margin-top:8px"><a href={mailHref}><strong>{mailDisplay}</strong></a></div>
+          <div class="small" style="margin-top:8px"><a href={mapHref} target="_blank"><strong>Google Maps</strong></a></div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px">
+          <a class="btn" href={phoneHref}>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.07 21 3 13.93 3 5a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.46.57 3.58a1 1 0 0 1-.25 1.01l-2.2 2.2z" fill="currentColor"/>
+            </svg>
+            {c.sections.contact.ctaCall}
+          </a>
+          <a class="btn" href={mailHref}>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5v-11Zm2.5-.5a.5.5 0 0 0-.32.12L12 10.9l5.82-4.78A.5.5 0 0 0 17.5 6h-11Zm12.5 2.3-6.36 5.22a1 1 0 0 1-1.28 0L5 8.3v9.2a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5V8.3Z" fill="currentColor"/>
+            </svg>
+            {c.sections.contact.ctaMail}
+          </a>
+          <a class="btn" href={mapHref} target="_blank">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7Zm0 9.5A2.5 2.5 0 1 0 12 6.5a2.5 2.5 0 0 0 0 5Z" fill="currentColor"/>
+            </svg>
+            {c.sections.contact.ctaMap}
+          </a>
+          <a class="btn" href="https://www.facebook.com/Usadba.MestoSily/" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M13.5 22v-8h2.7l.4-3h-3.1V9.1c0-.9.3-1.5 1.6-1.5h1.7V5a23 23 0 0 0-2.5-.1c-2.5 0-4.2 1.5-4.2 4.3V11H7.5v3h2.6v8h3.4Z" fill="currentColor"/>
+            </svg>
+            {c.sections.contact.ctaFacebook}
+          </a>
+        </div>
+
+        <div class="mapEmbed" style="margin-top:14px">
+          <iframe src={mapEmbedSrc} allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" />
+        </div>
+      </div>
+
+      <div class="glass heroArt" aria-label="Hero image">
+        <img src="/assets/hero.jpg" alt={c.sections.contact.title} loading="lazy" />
+      </div>
+    </div>
+  </section>
